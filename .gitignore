@@ -5,6 +5,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+#main dir
+DB_DIR/pgdata
+
 # Runtime data
 pids
 *.pid

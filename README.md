@@ -1,7 +1,7 @@
 # short-url
 ## [RUS]
 ## Этот небольшой проект — сервис по сокращению ссылок.
-## Для хранения данных используется Mongo (развернута в Docker)
+## Для хранения данных используется PostgreSql (развернута в Docker)
 
 ### Пример:
 ### Хотим сократить ссылку :
@@ -17,7 +17,7 @@ https://this-host/vlp
 
 ## [ENG]
 ## This small project is a link shortening service.
-## Mongo is used for data storage (deployed in Docker)
+## PostgreSql is used for data storage (deployed in Docker)
 
 ### Example:
 ### We want to shorten the link:
