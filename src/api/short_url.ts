@@ -1,6 +1,21 @@
 import express from 'express';
+
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { z } from 'zod';
+
+ 
+const schemaMain = z.object({
+  slug: z.string().trim(),
+  url: z.string().trim().url(),
+}).required();
+  
+  type shortUrl = z.infer<typeof schemaMain>;
+// const schema:Schema = yup.object().shape([
+//   slug: yup.string().trim().matches(/[\w\-]/i),
+//   url: yup.string().url().required(),
+// ]);
 
 const Pool = require('pg').Pool;
 export const pool = new Pool({
@@ -21,8 +36,12 @@ interface RowsUrl {
 
 router.post('/create', async (req, res, next) => {
   try {    
-    const { url, slug = uuidv4() } = req.body;
-    const resultUrl = `${url}/${slug}`;
+    const { url, slug = nanoid() } = req.body;
+    schemaMain.parse({
+      slug,
+      url,
+    });
+    const resultUrl = `${url}/${slug.toLowerCase()}`;
     const candidate  = await pool.query('SELECT * FROM short_url WHERE result=$1', [resultUrl]);
     console.log(candidate.rowCount, resultUrl);
     if (candidate.rowCount) {
@@ -47,11 +66,14 @@ router.get('/all', async (req, res, next) => {
   
 });
 
-router.get('/get_url/:id', async (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
   try {
     const id = parseInt(req.params.id);
-    const result:{ rows: RowsUrl[]; }  = await pool.query('SELECT * FROM short_url WHERE id = $1', [id]); 
-    res.status(200).json(result.rows);
+    const result:{ rows: RowsUrl[]; }  = await pool.query('SELECT result FROM short_url WHERE id = $1', [id]); 
+    if (result) {
+      res.redirect(result.rows[0].result);
+    }
+    // res.status(200).json(result.rows);
   } catch (error) {
     console.log(error);
     next(error);
@@ -62,8 +84,12 @@ router.get('/get_url/:id', async (req, res, next) => {
 router.put('/update_url/:id', async (req, res, next) => {
   try {
     const id = parseInt(req.params.id);
-    const { url, slug = uuidv4() } = req.body;
-    const resultUrl = `${url}/${slug}`;
+    const { url, slug = nanoid() } = req.body;
+    schemaMain.parse({
+      slug,
+      url,
+    });
+    const resultUrl = `${url}/${slug.toLowerCase()}`;
     const candidate  = await pool.query('SELECT * FROM short_url WHERE result = $1', [resultUrl]);
     console.log(candidate.rowCount, resultUrl);
     if (candidate.rowCount) {
